@@ -1,11 +1,11 @@
-use std::collections::HashSet;
 use crate::grid::Position;
+use crate::hash::LiveSet;
 use crate::config::RANDOM_DENSITY;
 use macroquad::rand::gen_range;
 
 /// Context for pattern application with grid information
 pub struct PatternContext<'a> {
-    pub cells: &'a mut HashSet<Position>,
+    pub cells: &'a mut LiveSet,
     pub grid_width: i32,
     pub grid_height: i32,
     pub wrap_world: bool,

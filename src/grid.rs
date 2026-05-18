@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use crate::hash::{BuildPosHasher, LiveSet, PosMap};
 
 /// A cell coordinate in the grid
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
@@ -60,12 +60,16 @@ impl Grid {
         Position::new(nx, ny)
     }
 
-    /// Calculate next generation of cells
-    pub fn next_generation(&self, live: &HashSet<Position>) -> HashSet<Position> {
-        let mut counts: HashMap<Position, u8> = HashMap::with_capacity(live.len() * 8 + 8);
+    /// Calculate next generation of cells.
+    ///
+    /// Bit 7 (`0x80`) of each count entry marks a currently-live cell,
+    /// so we don't need a second `live.contains()` lookup per output cell.
+    pub fn next_generation(&self, live: &LiveSet) -> LiveSet {
+        let mut counts: PosMap<u8> =
+            PosMap::with_capacity_and_hasher(live.len() * 4 + 8, BuildPosHasher::default());
 
-        // Count neighbors for each live cell
         for &cell in live {
+            *counts.entry(cell).or_insert(0) |= 0x80;
             for (dx, dy) in NEIGHBOR_OFFSETS {
                 let p = if self.wrap_world {
                     self.wrap(cell.x() + dx, cell.y() + dy)
@@ -78,12 +82,11 @@ impl Grid {
             }
         }
 
-        // Apply Game of Life rules:
-        // - Birth: dead cell with exactly 3 neighbors
-        // - Survival: live cell with 2 or 3 neighbors
-        let mut next = HashSet::with_capacity(live.len());
-        for (pos, n) in counts {
-            let alive = live.contains(&pos);
+        // B3/S23: birth at 3 neighbors, survival at 2 or 3.
+        let mut next = LiveSet::with_capacity_and_hasher(live.len(), BuildPosHasher::default());
+        for (pos, c) in counts {
+            let n = c & 0x7f;
+            let alive = c & 0x80 != 0;
             if n == 3 || (alive && n == 2) {
                 next.insert(pos);
             }

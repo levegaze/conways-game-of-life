@@ -2,6 +2,7 @@
 
 mod config;
 mod themes;
+mod hash;
 mod grid;
 mod game;
 mod patterns;
