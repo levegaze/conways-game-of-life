@@ -2,6 +2,7 @@
 
 pub mod config;
 pub mod themes;
+pub mod hash;
 pub mod grid;
 pub mod game;
 pub mod patterns;

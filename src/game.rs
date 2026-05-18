@@ -1,13 +1,13 @@
-use std::collections::HashSet;
 use macroquad::prelude::*;
 
 use crate::grid::{Grid, Position};
+use crate::hash::LiveSet;
 use crate::patterns::{Pattern, PatternContext};
 use crate::themes::ColorTheme;
 
 /// Core game state for Conway's Game of Life simulation
 pub struct GameOfLife {
-    pub live: HashSet<Position>,
+    pub live: LiveSet,
     pub grid: Grid,
     pub cell: i32,          // Visual size of each cell in pixels
     pub generation: u64,     // Current generation count
@@ -19,7 +19,7 @@ impl GameOfLife {
     /// Create a new game grid with specified dimensions
     pub fn new(width: i32, height: i32, cell_size: i32) -> Self {
         Self {
-            live: HashSet::new(),
+            live: LiveSet::default(),
             grid: Grid::new(width, height),
             cell: cell_size,
             generation: 0,
